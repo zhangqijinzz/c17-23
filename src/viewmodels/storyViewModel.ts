@@ -7,7 +7,7 @@ import {
   type StoryDocument,
   type StoryScene,
 } from '../models/story';
-import { getStats, getTimelineWarning, orderedScenes, validateName } from '../models/storyRules';
+import { deriveScene, getStats, getTimelineWarning, orderedScenes, validateName } from '../models/storyRules';
 import type { StoryRepository } from '../repositories/storyRepository';
 
 export type ViewModelStatus = 'loading' | 'ready' | 'editing' | 'error' | 'completed';
@@ -105,6 +105,21 @@ export class StoryViewModel {
     this.setState({ notice: `已创建场景「${scene.title}」` });
   }
 
+  deriveScene(sourceSceneId: string): void {
+    const source = this.requireStory().scenes.find((scene) => scene.id === sourceSceneId);
+    if (!source) {
+      this.setState({ notice: '请先选择要派生的场景' });
+      return;
+    }
+    const derived = deriveScene(this.requireStory(), sourceSceneId, createId('scene'));
+    this.updateStory(() => ({ ...derived.story, selectedSceneId: sourceSceneId }));
+    this.setState({
+      notice: derived.scene.pendingClues?.length
+        ? `已在「${source.title}」后插入相似场景，${derived.scene.pendingClues.length} 条伏笔需要重新建立`
+        : `已在「${source.title}」后插入相似场景`,
+    });
+  }
+
   updateScene(sceneId: string, patch: Partial<Pick<StoryScene, 'title' | 'summary' | 'conflict'>>): void {
     this.updateStory((story) => ({
       ...story,
@@ -147,7 +162,17 @@ export class StoryViewModel {
     this.updateStory((story) => ({
       ...story,
       clues: [...story.clues, clue],
-      scenes: story.scenes.map((scene) => scene.id === setupSceneId ? { ...scene, clueIds: [...scene.clueIds, clue.id] } : scene),
+      scenes: story.scenes.map((scene) => {
+        const isSetup = scene.id === setupSceneId;
+        const isPayoff = scene.id === payoffSceneId;
+        if (!isSetup && !isPayoff) return scene;
+        const clueIds = scene.clueIds.includes(clue.id) ? scene.clueIds : [...scene.clueIds, clue.id];
+        const completedRoles: Array<'setup' | 'payoff'> = [];
+        if (isSetup) completedRoles.push('setup');
+        if (isPayoff) completedRoles.push('payoff');
+        const pendingClues = scene.pendingClues?.filter((prompt) => !(completedRoles.includes(prompt.role) && prompt.clueTitle === cleanTitle));
+        return { ...scene, clueIds, pendingClues };
+      }),
     }));
     this.setState({ notice: payoffSceneId ? '伏笔关系已建立' : '伏笔已记录，等待回收' });
   }

@@ -9,7 +9,9 @@ export function SceneInspector({ viewModel, scene, characters }: SceneInspectorP
   const index = story ? [...story.scenes].sort((a, b) => a.order - b.order).findIndex((item) => item.id === scene.id) : 0;
   return (
     <section className="panel inspector">
-      <div className="inspector-top"><div><span className="eyebrow">SCENE {String(index + 1).padStart(2, '0')} / 场景详情</span><h2>{scene.title}</h2></div><span className="edit-state">编辑中</span></div>
+      <div className="inspector-top"><div><span className="eyebrow">SCENE {String(index + 1).padStart(2, '0')} / 场景详情</span><h2>{scene.title}</h2>{scene.derivedFromSceneId && <span className="derived-source">派生于「{story?.scenes.find((item) => item.id === scene.derivedFromSceneId)?.title ?? '原场景'}」</span>}</div><span className="edit-state">编辑中</span></div>
+      <div className="inspector-actions"><button className="derive-button" onClick={() => viewModel.deriveScene(scene.id)}>⧉ 派生相似场景</button></div>
+      {scene.pendingClues && scene.pendingClues.length > 0 && <div className="pending-clue-banner"><strong>待重建伏笔（{scene.pendingClues.length}）</strong><p>原场景的伏笔关系没有共享。请按提示到伏笔面板重新建立：</p><ul>{scene.pendingClues.map((prompt, promptIndex) => <li key={`${prompt.clueTitle}-${prompt.role}-${promptIndex}`}>{prompt.clueTitle} · {prompt.role === 'setup' ? '此场景埋下' : '此场景回收'}</li>)}</ul></div>}
       <label>场景标题<input value={scene.title} onChange={(event) => viewModel.updateScene(scene.id, { title: event.target.value })} /></label>
       <label>这一幕发生了什么<textarea value={scene.summary} onChange={(event) => viewModel.updateScene(scene.id, { summary: event.target.value })} rows={3} /></label>
       <label>核心冲突<textarea value={scene.conflict} onChange={(event) => viewModel.updateScene(scene.id, { conflict: event.target.value })} rows={2} placeholder="是什么让人物无法轻易得到想要的东西？" /></label>

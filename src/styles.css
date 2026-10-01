@@ -78,6 +78,16 @@ button { cursor: pointer; }
 .scene-tags { display: flex; gap: 5px; }
 .scene-tags em, .clue-row em { font-style: normal; font-size: 10px; background: #f1dfd8; color: #a95543; border-radius: 3px; padding: 3px 5px; }
 .scene-tags .clue-tag { background: #e7edf5; color: #62789d; }
+.scene-tags .derived-tag { background: #eee8f5; color: #7d659f; }
+.scene-tags .pending-clue-tag { background: #fbefd9; color: #a36e27; }
+.derive-button { border: 1px solid var(--line); background: #fffefa; color: var(--ink); border-radius: 5px; padding: 8px 10px; font-size: 11px; }
+.derive-button:hover { background: #fff8ef; border-color: #dfcfc0; }
+.inspector-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
+.derived-source { display: inline-block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+.pending-clue-banner { margin-top: 15px; border: 1px dashed #d9ad65; background: #fbefd9; color: #87551d; border-radius: 6px; padding: 10px 11px; font-size: 11px; display: grid; gap: 5px; }
+.pending-clue-banner strong { font-size: 11px; }
+.pending-clue-banner p { margin: 0; }
+.pending-clue-banner ul { margin: 0; padding-left: 16px; display: grid; gap: 3px; }
 .create-scene-row, .inline-form, .clue-form { display: flex; gap: 7px; margin-top: 17px; border-top: 1px solid var(--line); padding-top: 16px; }
 input, textarea, select { border: 1px solid var(--line); border-radius: 5px; background: #fffefa; color: var(--ink); outline-color: var(--coral); font-size: 12px; padding: 9px 10px; }
 .create-scene-row input:first-child { width: 27%; }.create-scene-row input:nth-child(2) { flex: 1; }.create-scene-row button { white-space: nowrap; padding: 9px 12px; }

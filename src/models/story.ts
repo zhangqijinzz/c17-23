@@ -7,6 +7,13 @@ export interface StoryCharacter {
   color: string;
 }
 
+export type PendingClueRole = 'setup' | 'payoff';
+
+export interface PendingCluePrompt {
+  clueTitle: string;
+  role: PendingClueRole;
+}
+
 export interface StoryScene {
   id: string;
   title: string;
@@ -15,6 +22,8 @@ export interface StoryScene {
   conflict: string;
   characterIds: string[];
   clueIds: string[];
+  derivedFromSceneId?: string;
+  pendingClues?: PendingCluePrompt[];
 }
 
 export interface StoryClue {

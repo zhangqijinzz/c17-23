@@ -1,7 +1,61 @@
-import type { StoryDocument, StoryScene, StoryStats } from './story';
+import type { PendingCluePrompt, StoryDocument, StoryScene, StoryStats } from './story';
 
 export function orderedScenes(story: StoryDocument): StoryScene[] {
   return [...story.scenes].sort((a, b) => a.order - b.order);
+}
+
+export interface DerivedScene {
+  story: StoryDocument;
+  scene: StoryScene;
+}
+
+export function deriveScene(story: StoryDocument, sourceSceneId: string, newSceneId: string): DerivedScene {
+  const ordered = orderedScenes(story);
+  const sourceIndex = ordered.findIndex((scene) => scene.id === sourceSceneId);
+  if (sourceIndex < 0) throw new Error('找不到要派生的场景');
+
+  const pendingClues = story.clues.flatMap((clue) => {
+    const prompts: PendingCluePrompt[] = [];
+    if (clue.setupSceneId === sourceSceneId) {
+      prompts.push({ clueTitle: clue.title, role: 'setup' });
+    }
+    if (clue.payoffSceneId === sourceSceneId) {
+      prompts.push({ clueTitle: clue.title, role: 'payoff' });
+    }
+    return prompts;
+  });
+
+  const source = ordered[sourceIndex];
+  const derivedScene: StoryScene = {
+    id: newSceneId,
+    title: source.title,
+    order: sourceIndex + 2,
+    summary: source.summary,
+    conflict: source.conflict,
+    characterIds: [...source.characterIds],
+    clueIds: [],
+    derivedFromSceneId: source.id,
+    pendingClues,
+  };
+
+  const nextScenes = [...ordered];
+  nextScenes.splice(sourceIndex + 1, 0, derivedScene);
+  const reindexedScenes = nextScenes.map((scene, index) => ({
+    ...scene,
+    order: index + 1,
+    characterIds: [...scene.characterIds],
+    clueIds: [...scene.clueIds],
+    pendingClues: scene.pendingClues?.map((prompt) => ({ ...prompt })),
+  }));
+
+  return {
+    story: {
+      ...story,
+      scenes: reindexedScenes,
+      clues: story.clues,
+    },
+    scene: reindexedScenes[sourceIndex + 1],
+  };
 }
 
 export function getStats(story: StoryDocument): StoryStats {
