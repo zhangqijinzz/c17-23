@@ -7,7 +7,7 @@ import {
   type StoryDocument,
   type StoryScene,
 } from '../models/story';
-import { getStats, getTimelineWarning, orderedScenes, validateName } from '../models/storyRules';
+import { deriveSceneFrom, getStats, getTimelineWarning, orderedScenes, validateName } from '../models/storyRules';
 import type { StoryRepository } from '../repositories/storyRepository';
 
 export type ViewModelStatus = 'loading' | 'ready' | 'editing' | 'error' | 'completed';
@@ -110,6 +110,19 @@ export class StoryViewModel {
       ...story,
       scenes: story.scenes.map((scene) => (scene.id === sceneId ? { ...scene, ...patch } : scene)),
     }), false);
+  }
+
+  deriveScene(sourceSceneId: string): void {
+    const result = deriveSceneFrom(this.requireStory(), sourceSceneId);
+    if (!result) {
+      this.setState({ notice: '找不到要派生的场景' });
+      return;
+    }
+    this.updateStory(() => result.story);
+    const clueHint = result.droppedClueTitles.length > 0
+      ? `；原场景的伏笔（${result.droppedClueTitles.join('、')}）未复制，请为新场景重新建立伏笔关系`
+      : '';
+    this.setState({ notice: `已派生「${result.scene.title}」，插入在原场景之后${clueHint}` });
   }
 
   toggleCharacter(sceneId: string, characterId: string): void {

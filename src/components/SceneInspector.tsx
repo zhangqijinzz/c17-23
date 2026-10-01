@@ -15,6 +15,7 @@ export function SceneInspector({ viewModel, scene, characters }: SceneInspectorP
       <label>核心冲突<textarea value={scene.conflict} onChange={(event) => viewModel.updateScene(scene.id, { conflict: event.target.value })} rows={2} placeholder="是什么让人物无法轻易得到想要的东西？" /></label>
       <div className="field-block"><span className="field-label">出场人物</span><div className="person-toggles">{characters.map((character) => <button key={character.id} className={scene.characterIds.includes(character.id) ? `person-toggle selected ${character.color}` : 'person-toggle'} onClick={() => viewModel.toggleCharacter(scene.id, character.id)}><span>{character.name.slice(0, 1)}</span>{character.name}</button>)}</div></div>
       <div className="order-controls"><span>时间顺序</span><button disabled={index <= 0} onClick={() => viewModel.moveScene(scene.id, 'up')}>↑ 上移</button><button disabled={index >= (story?.scenes.length ?? 1) - 1} onClick={() => viewModel.moveScene(scene.id, 'down')}>↓ 下移</button></div>
+      <div className="derive-block"><button className="secondary-button" onClick={() => viewModel.deriveScene(scene.id)}>⧉ 派生新场景</button><p>复制标题、描述、冲突与出场人物，插入到本场景之后；伏笔关系不复制，需在新场景中重新建立。</p></div>
     </section>
   );
 }
